@@ -10,18 +10,11 @@ p = os.getcwd()
 
 class Recup_Donneees_VP:
     def __init__(self):
-        # self.Nettoyage_Italie_CSV_2('tmp2','2019-01-01','2019-12-31')
-        # self.Nettoyage_Italie_CSV('/tmp2/parco_circolante_Abruzzo.csv.zip','2019-01-01','2019-12-31')
-        # self.Concatenation_Italie_CSV_2()
         self.est_connecte()
-        # self.Concatenation_Italie_CSV()
-        self.get_df_ccicp()
+        self.get_need_csv_file()
+        self.Recuperation_parc_vp_commune_2022_xlsx()
+        self.df_propre_final_fr()
         
-        # self.Recuperation_Fichier_France()
-        # self.df_propre_final_fr()
-        
-        # self.Recuperation_Des_Fichiers_en_ligne('https://www.statistiques.developpement-durable.gouv.fr/donnees-sur-le-parc-de-vehicules-en-circulation-au-1er-janvier-2022','/France_data/','.xlsx')
-
     def est_connecte(self):
         try:
             socket.create_connection(("1.1.1.1", 53))
@@ -41,32 +34,41 @@ class Recup_Donneees_VP:
         else : self.fichiersExistes = False
         print (self.fichiersExistes)
 
-    def get_df_ccicp(self):
-        self.fichier_existe('/France_data/correspondance-code-insee-code-postal.csv')
-        
+    
+    def get_csv_file(self,url,open_file,sep=","):
+        self.fichier_existe(open_file)
         if not self.fichiersExistes and self.connexion:
-            print('Récupération du fichier: correspondance-code-insee-code-postal.csv en ligne')
-            url_ccicp = 'https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/correspondance-code-insee-code-postal/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B'
-            response = requests.get(url_ccicp, stream=True)
+            print(f'Récupération du fichier: {open_file} en ligne')
+            url = url
+            response = requests.get(url, stream=True)
             total_size = int(response.headers.get('content-length', 0))
             block_size = 1024
             progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True)
-            with open(p + r'/France_data/correspondance-code-insee-code-postal.csv', 'wb') as f:
+            with open(p + open_file, 'wb') as f:
                 for data in response.iter_content(block_size):
                     progress_bar.update(len(data))
                     f.write(data)
             progress_bar.close()
-            df_ccicp = pd.read_csv(p + '/France_data/correspondance-code-insee-code-postal.csv', sep=';')
-            self.df_ccicp = df_ccicp
-            return df_ccicp
+            df = pd.read_csv(p + open_file, sep=sep)
+            self.df = df
+            return self.df
         else:
-            print("Utilisation du fichier:correspondance-code-insee-code-postal.csv déjà téléchargé")
-            df_ccicp = pd.read_csv(p + '/France_data/correspondance-code-insee-code-postal.csv', sep=';')
-            self.df_ccicp = df_ccicp
-            return df_ccicp
+            print(f"Utilisation du fichier: {open_file} déjà téléchargé")
+            df = pd.read_csv(p + open_file, sep=sep)
+            self.df = df
+            return self.df
+    
+    def get_need_csv_file(self):
+        url_ccicp = 'https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/correspondance-code-insee-code-postal/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B'
+        open_ccicp = r"/France_data/correspondance-code-insee-code-postal.csv"
+        sep_ccicp=';'
+        self.df_ccicp = self.get_csv_file(url_ccicp,open_ccicp,sep_ccicp)
 
+        url_departements_region ='https://www.data.gouv.fr/fr/datasets/r/987227fb-dcb2-429e-96af-8979f97c9c84'
+        open_departements_region = r'/France_data/departements-region.csv'
+        self.df_regions = self.get_csv_file(url_departements_region,open_departements_region)
 
-    def Recuperation_Fichier_France(self):
+    def Recuperation_parc_vp_commune_2022_xlsx(self):
         # self.fichier_existe(p + '/France_data/*.xlsx')
         self.fichier_existe('/France_data/parc_vp_commune_2022.xlsx')
 
@@ -125,13 +127,11 @@ class Recup_Donneees_VP:
 
         print ('df_fr_propre_sans_Inconnu : ',df_fr_propre_sans_Inconnu.shape,'\n')
 
-        df_regions = pd.read_csv(p + r'/France_data/departements-region.csv')
+        print ('self.df_regions : ',self.df_regions.shape,'\n')
 
-        print ('df_regions : ',df_regions.shape,'\n')
-
-        df_regions['num_dep'] = df_regions['num_dep'].astype(str) # obligé de typer en str a cause de la corse pour faire la jointure
+        self.df_regions['num_dep'] = self.df_regions['num_dep'].astype(str) # obligé de typer en str a cause de la corse pour faire la jointure
         df_fr_propre_sans_Inconnu['code_departement_de_residence'] = df_fr_propre_sans_Inconnu['code_departement_de_residence'].astype(str) # obligé de typer en str a cause de la corse pour faire la jointure
-        df_merged_sans_Inconnu = pd.merge(df_fr_propre_sans_Inconnu, df_regions, left_on='code_departement_de_residence', right_on='num_dep', how='inner')
+        df_merged_sans_Inconnu = pd.merge(df_fr_propre_sans_Inconnu, self.df_regions, left_on='code_departement_de_residence', right_on='num_dep', how='inner')
 
         print ('df_merged_sans_Inconnu : ',df_merged_sans_Inconnu.shape,'\n')
 
@@ -189,7 +189,6 @@ class Recup_Donneees_VP:
         
         # df_ccicp = pd.read_csv(p+r'/France_data/correspondance-code-insee-code-postal.csv',sep=',')#,sep=';')
 
-        
         print ('df_ccicp : ',self.df_ccicp.shape,'\n')
 
         # df_ccicp_geoloc_propre = df_ccicp[df_ccicp['Statut'].isin(["['Préfecture']", "['Préfecture de région']",'["Capitale d\'état"]'])]
@@ -228,15 +227,13 @@ class Recup_Donneees_VP:
         parc_vp_propre_geoloc.to_csv(p + r'/France_data/df_parc_vp_propre_geoloc.csv',encoding="utf-8")
         print (parc_vp_propre_geoloc.shape)
 
-    # def jointure_coordonnees(self):
-
-    
 
         # verif integrité des données
         # df_doublon = df_final[df_fr_propre_sans_Inconnu['departement_de_residence'] == df_final['commune_de_residence']]
         # df_doublon.to_csv(p + r'/France_data/df_doublon_utf-8.csv',encoding="utf-8")
 
 test = Recup_Donneees_VP()
+
 # test.Recuperation_Des_Fichiers_Italie_en_ligne()
 # print ('test ',test.est_connecte())
         # html = requests.get(url).text
