@@ -1,3 +1,4 @@
+from get_files_and_clean import Recup_Donneees_VP
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
@@ -14,18 +15,19 @@ from io import BytesIO
 import json
 import imageio.v3 as iio
 
+Recup_Donneees_VP()
+
+
 p = os.getcwd()
 
 # , dtype={3: str, 4: str})
 df_propre = pd.read_csv(
-#    p + r'/France_data/df_commune_merged_geoloc_lat_long.csv', index_col=[0], dtype={4: str, 5: str, 21: str})
-    p + r'/France_data/parc_vp_propre_geoloc_final.csv', index_col=[0], dtype={1: str, 2: str, 20: str})
+    p + r'/France_data/df_parc_vp_propre_geoloc.csv', index_col=[0], dtype={3: str,4: str, 20: str, 22: str})
+#    p + r'/France_data/parc_vp_propre_geoloc_final.csv', index_col=[0], dtype={1: str, 2: str, 20: str})
 df_propre[['lattitude', 'longitude']
           ] = df_propre['geo_point_2d'].str.split(',', expand=True)
 df_propre[['lattitude', 'longitude']] = df_propre[[
     'lattitude', 'longitude']].astype(float)
-
-
 
 def carto(df_commune,file_name,model,Annees_list):
 
@@ -209,7 +211,7 @@ def carto(df_commune,file_name,model,Annees_list):
     with open(file_name+'-'+'google_map.html', 'w') as f:
         for line in lines:
             if '<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=visualization"></script>' in line:
-                # f.write('<div id="carte"><script src="https://cdn.jsdelivr.net/gh/somanchiu/Keyless-Google-Maps-API@v5.9/mapsJavaScriptAPI.js"></script>')
+                # f.write('<div id="carte"><script src="https://cdn.jsdelivr.net/gh/somanchiu/Keyless-Google-Maps-API@v5.9/mapsJavaScriptAPI.js"async defer></script>')
                 f.write('<div id="carte"></div> <script src="gm_keyless.js" async defer></script>')
             else:
                 f.write(line)
@@ -478,7 +480,7 @@ def plot_vehicule_evolution(df_commune, model, region=None, departement=None, co
 # plot_vehicule_evolution(df_propre, 'crit_air', None,
 #                         'Hauts-de-Seine', None, None, None, 2019, 2021)
 
-plot_vehicule_evolution(df_propre, 'carburant', None,
+plot_vehicule_evolution(df_propre, 'crit_air', None,
                          'Paris', None, None, None, 2012, 2022)
 
 # plot_vehicule_evolution(df_propre, 'crit_air', 'Auvergne-Rhône-Alpes',

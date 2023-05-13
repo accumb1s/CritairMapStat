@@ -11,20 +11,17 @@ class Recup_Donneees_VP:
         self.p = os.getcwd()
         self.fichierExiste = False
         self.connexion = False
-        self.verif_exist_parc_vp_propre_geoloc()
-        self.est_connecte()
-        self.get_need_csv_file()
-        self.Recuperation_parc_vp_commune_2022_xlsx()
-        self.df_propre_final_fr()
-    
-    def verif_exist_parc_vp_propre_geoloc(self):
-        self.fichier_existe(r'/France_data/df_parc_vp_propre_geoloc.csv')
-        if not self.fichierExiste and self.connexion:
+        flag = self.fichier_existe(r'/France_data/df_parc_vp_propre_geoloc.csv')
+        if flag:print ('Le fichier df_parc_vp_propre_geoloc.csv existe déjà')
+        else:
             newpath = self.p + r'/France_data'
             os.makedirs(newpath)
-        else:
-            raise SystemExit('Le fichier df_parc_vp_propre_geoloc.csv existe déjà')
+            self.est_connecte()
+            self.get_need_csv_file()
+            self.Recuperation_parc_vp_commune_2022_xlsx()
+            self.df_propre_final_fr()
 
+    
     def est_connecte(self):
         try:
             socket.create_connection(("1.1.1.1", 53))
@@ -38,15 +35,13 @@ class Recup_Donneees_VP:
 
     def fichier_existe(self,pathfichier):
         if glob.glob(self.p+pathfichier):
-            print ('fichier exist')
-            self.fichierExiste = True
-        else : self.fichierExiste = False
-        print (self.fichierExiste)
+            return True
+        else : return False
 
     
     def get_csv_file(self,url,open_file,sep=","):
-        self.fichier_existe(open_file)
-        if not self.fichierExiste and self.connexion:
+        flag = self.fichier_existe(open_file)
+        if not flag and self.connexion:
             print(f'Récupération du fichier: {open_file} en ligne')
             url = url
             response = requests.get(url, stream=True)
@@ -80,9 +75,9 @@ class Recup_Donneees_VP:
 
     def Recuperation_parc_vp_commune_2022_xlsx(self):
         # self.fichier_existe(self.p + '/France_data/*.xlsx')
-        self.fichier_existe('/France_data/parc_vp_commune_2022.xlsx')
+        flag = self.fichier_existe('/France_data/parc_vp_commune_2022.xlsx')
 
-        if not self.fichierExiste and self.connexion:
+        if not flag and self.connexion:
             print('Récupération du fichier:parc_vp_commune_2022.xlsx en ligne')
             url_Parc_VP_France = 'https://www.statistiques.developpement-durable.gouv.fr/sites/default/files/2022-10/parc_vp_commune_2022.xlsx'
             response = requests.get(url_Parc_VP_France, stream=True)
