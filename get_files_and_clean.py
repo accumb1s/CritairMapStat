@@ -236,37 +236,3 @@ class Recup_Donneees_VP:
         print (parc_vp_propre_geoloc)
         parc_vp_propre_geoloc.to_csv(self.p + r'/France_data/df_parc_vp_propre_geoloc.csv',encoding="utf-8")
         print (parc_vp_propre_geoloc.shape)
-
-
-        # verif integrité des données
-        # df_doublon = df_final[df_fr_propre_sans_Inconnu['departement_de_residence'] == df_final['commune_de_residence']]
-        # df_doublon.to_csv(self.p + r'/France_data/df_doublon_utf-8.csv',encoding="utf-8")
-
-Recup_Donneees_VP()
-
-# test.Recuperation_Des_Fichiers_Italie_en_ligne()
-# print ('test ',test.est_connecte())
-        # html = requests.get(url).text
-        # soup = BeautifulSoup(html, 'html.parser')
-        # l1 = []
-        # l2 = []
-        # print ('Processing: '), url
-        # for name in soup.find_all('a', href=re.compile('.zip$')):
-        #     zipurl = name['href']
-        #     outfname = self.p + '/Data_Loto_Fr' + '/' + zipurl.split('/')[-1]
-        #     l1.append(zipurl)
-        #     l2.append(outfname)
-        #     r = requests.get(zipurl, stream=True)
-        #     if r.status_code == requests.codes.ok:
-        #         with open(outfname, 'wb') as fd:
-        #             for chunk in r.iter_content(chunk_size=1024):
-        #                 if chunk:
-        #                     fd.write(chunk)
-        #         print ('fd: ', fd)
-        #         fd.close()
-        # self.l2 = l2
-
-    # def fichiers_existes(self):
-    #     today = dt.datetime.now().date()
-    #     if os.path.isfile(parc_vp_commune_2022.xlsx) and os.path.isfile(Csv_Loto_Fr_Chance_Op):
-
