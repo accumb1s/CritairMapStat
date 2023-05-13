@@ -6,15 +6,25 @@ import glob
 import requests
 from tqdm import tqdm
 
-p = os.getcwd()
-
 class Recup_Donneees_VP:
     def __init__(self):
+        self.p = os.getcwd()
+        self.fichierExiste = False
+        self.connexion = False
+        self.verif_exist_parc_vp_propre_geoloc()
         self.est_connecte()
         self.get_need_csv_file()
         self.Recuperation_parc_vp_commune_2022_xlsx()
         self.df_propre_final_fr()
-        
+    
+    def verif_exist_parc_vp_propre_geoloc(self):
+        self.fichier_existe(r'/France_data/df_parc_vp_propre_geoloc.csv')
+        if not self.fichierExiste and self.connexion:
+            newpath = self.p + r'/France_data'
+            os.makedirs(newpath)
+        else:
+            raise SystemExit('Le fichier df_parc_vp_propre_geoloc.csv existe déjà')
+
     def est_connecte(self):
         try:
             socket.create_connection(("1.1.1.1", 53))
@@ -24,41 +34,41 @@ class Recup_Donneees_VP:
             pass
             self.connexion = False
             print (self.connexion)
-            
-    # '\France_data\parc_vp_commune_2022.xlsx'
+            print ('Merci de véfifier votre connexion')
 
     def fichier_existe(self,pathfichier):
-        if glob.glob(p+pathfichier):
+        if glob.glob(self.p+pathfichier):
             print ('fichier exist')
-            self.fichiersExistes = True
-        else : self.fichiersExistes = False
-        print (self.fichiersExistes)
+            self.fichierExiste = True
+        else : self.fichierExiste = False
+        print (self.fichierExiste)
 
     
     def get_csv_file(self,url,open_file,sep=","):
         self.fichier_existe(open_file)
-        if not self.fichiersExistes and self.connexion:
+        if not self.fichierExiste and self.connexion:
             print(f'Récupération du fichier: {open_file} en ligne')
             url = url
             response = requests.get(url, stream=True)
             total_size = int(response.headers.get('content-length', 0))
             block_size = 1024
             progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True)
-            with open(p + open_file, 'wb') as f:
+            with open(self.p + open_file, 'wb') as f:
                 for data in response.iter_content(block_size):
                     progress_bar.update(len(data))
                     f.write(data)
             progress_bar.close()
-            df = pd.read_csv(p + open_file, sep=sep)
+            df = pd.read_csv(self.p + open_file, sep=sep)
             self.df = df
             return self.df
         else:
             print(f"Utilisation du fichier: {open_file} déjà téléchargé")
-            df = pd.read_csv(p + open_file, sep=sep)
+            df = pd.read_csv(self.p + open_file, sep=sep)
             self.df = df
             return self.df
     
     def get_need_csv_file(self):
+        
         url_ccicp = 'https://public.opendatasoft.com/api/explore/v2.1/catalog/datasets/correspondance-code-insee-code-postal/exports/csv?lang=fr&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B'
         open_ccicp = r"/France_data/correspondance-code-insee-code-postal.csv"
         sep_ccicp=';'
@@ -69,31 +79,31 @@ class Recup_Donneees_VP:
         self.df_regions = self.get_csv_file(url_departements_region,open_departements_region)
 
     def Recuperation_parc_vp_commune_2022_xlsx(self):
-        # self.fichier_existe(p + '/France_data/*.xlsx')
+        # self.fichier_existe(self.p + '/France_data/*.xlsx')
         self.fichier_existe('/France_data/parc_vp_commune_2022.xlsx')
 
-        if not self.fichiersExistes and self.connexion:
+        if not self.fichierExiste and self.connexion:
             print('Récupération du fichier:parc_vp_commune_2022.xlsx en ligne')
             url_Parc_VP_France = 'https://www.statistiques.developpement-durable.gouv.fr/sites/default/files/2022-10/parc_vp_commune_2022.xlsx'
             response = requests.get(url_Parc_VP_France, stream=True)
             total_size = int(response.headers.get('content-length', 0))
             block_size = 1024  # 1 kilobyte
             progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True)
-            with open(p + r"/France_data/parc_vp_commune_2022.xlsx", "wb") as f:
+            with open(self.p + r"/France_data/parc_vp_commune_2022.xlsx", "wb") as f:
                 for data in response.iter_content(block_size):
                     progress_bar.update(len(data))
                     f.write(data)
             progress_bar.close()
-            df_fr_original = pd.read_excel(p + r'/France_data/parc_vp_commune_2022.xlsx', skiprows=3, header=0)
+            df_fr_original = pd.read_excel(self.p + r'/France_data/parc_vp_commune_2022.xlsx', skiprows=3, header=0)
             self.df_fr_original = df_fr_original
         else:
             print("Utilisation du fichier:parc_vp_commune_2022.xlsx déjà téléchargé")
-            df_fr_original = pd.read_excel(p + r'/France_data/parc_vp_commune_2022.xlsx', skiprows=3, header=0)
+            df_fr_original = pd.read_excel(self.p + r'/France_data/parc_vp_commune_2022.xlsx', skiprows=3, header=0)
             self.df_fr_original = df_fr_original
 
     
     def renommage(self):
-        # df_fr_original = pd.read_excel(p + r'/France_data/parc_vp_commune_2022.xlsx', skiprows=3, header=0)
+        # df_fr_original = pd.read_excel(self.p + r'/France_data/parc_vp_commune_2022.xlsx', skiprows=3, header=0)
         self.df_fr_original = self.df_fr_original.rename(columns={ 'Code commune de résidence': 'code_commune_insee_residence', 'Commune de résidence': 'commune_de_residence', 
                 'Carburant': 'carburant', "Crit'Air": 'crit_air' })
         return self.df_fr_original
@@ -114,7 +124,7 @@ class Recup_Donneees_VP:
 
         print ('df_fr_original: ',df_fr_original)
 
-        df_fr_original.to_csv(p + r'/France_data/df_fr_original_utf-8.csv',encoding="utf-8")
+        df_fr_original.to_csv(self.p + r'/France_data/df_fr_original_utf-8.csv',encoding="utf-8")
         df_fr_propre_sans_Inconnu = df_fr_original[df_fr_original["commune_de_residence"] != 'Inconnu']
 
         print ('df_fr_propre_sans_Inconnu: ',df_fr_propre_sans_Inconnu)
@@ -181,13 +191,13 @@ class Recup_Donneees_VP:
     
 
         print ('df_doublon : ',df_doublon.shape,'\n')
-        df_doublon.to_csv(p + r'/France_data/df_doublon_utf-8.csv',encoding="utf-8")
+        df_doublon.to_csv(self.p + r'/France_data/df_doublon_utf-8.csv',encoding="utf-8")
 
         df_sans_doublon = df_fr_propre_sans_Inconnu.drop(df_doublon.index)
         
         print ('df_sans_doublon drop: ',df_sans_doublon.shape,'\n')
         
-        # df_ccicp = pd.read_csv(p+r'/France_data/correspondance-code-insee-code-postal.csv',sep=',')#,sep=';')
+        # df_ccicp = pd.read_csv(self.p+r'/France_data/correspondance-code-insee-code-postal.csv',sep=',')#,sep=';')
 
         print ('df_ccicp : ',self.df_ccicp.shape,'\n')
 
@@ -197,7 +207,7 @@ class Recup_Donneees_VP:
         df_ccicp_geoloc_propre = self.df_ccicp
 
 
-        df_ccicp_geoloc_propre.to_csv(p + r'/France_data/df_ccicp_geoloc_propre_utf-8.csv',encoding="utf-8")
+        df_ccicp_geoloc_propre.to_csv(self.p + r'/France_data/df_ccicp_geoloc_propre_utf-8.csv',encoding="utf-8")
 
         print ('df_ccicp_geoloc_propre : ',df_ccicp_geoloc_propre,'\n')
 
@@ -214,7 +224,7 @@ class Recup_Donneees_VP:
 
         print ('df_final : ',df_final.shape,'\n')
 
-        df_final.to_csv(p + r'/France_data/df_final_utf-8.csv',encoding="utf-8")
+        df_final.to_csv(self.p + r'/France_data/df_final_utf-8.csv',encoding="utf-8")
 
         df_final = df_final.astype(str)
         df_ccicp_geoloc_propre = df_ccicp_geoloc_propre.astype(str)
@@ -224,15 +234,15 @@ class Recup_Donneees_VP:
         parc_vp_propre_geoloc = parc_vp_propre_geoloc.dropna(subset=['geo_point_2d'])
 
         print (parc_vp_propre_geoloc)
-        parc_vp_propre_geoloc.to_csv(p + r'/France_data/df_parc_vp_propre_geoloc.csv',encoding="utf-8")
+        parc_vp_propre_geoloc.to_csv(self.p + r'/France_data/df_parc_vp_propre_geoloc.csv',encoding="utf-8")
         print (parc_vp_propre_geoloc.shape)
 
 
         # verif integrité des données
         # df_doublon = df_final[df_fr_propre_sans_Inconnu['departement_de_residence'] == df_final['commune_de_residence']]
-        # df_doublon.to_csv(p + r'/France_data/df_doublon_utf-8.csv',encoding="utf-8")
+        # df_doublon.to_csv(self.p + r'/France_data/df_doublon_utf-8.csv',encoding="utf-8")
 
-test = Recup_Donneees_VP()
+Recup_Donneees_VP()
 
 # test.Recuperation_Des_Fichiers_Italie_en_ligne()
 # print ('test ',test.est_connecte())
@@ -243,7 +253,7 @@ test = Recup_Donneees_VP()
         # print ('Processing: '), url
         # for name in soup.find_all('a', href=re.compile('.zip$')):
         #     zipurl = name['href']
-        #     outfname = p + '/Data_Loto_Fr' + '/' + zipurl.split('/')[-1]
+        #     outfname = self.p + '/Data_Loto_Fr' + '/' + zipurl.split('/')[-1]
         #     l1.append(zipurl)
         #     l2.append(outfname)
         #     r = requests.get(zipurl, stream=True)
