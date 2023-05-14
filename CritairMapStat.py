@@ -6,17 +6,14 @@ import seaborn as sns
 # en relation avec le changement d'echelle sur l'axe des y pour les barplot
 from matplotlib.ticker import FuncFormatter
 import gmplot
-from plotnine import *
 import folium
 from folium.plugins import MarkerCluster
-from gmaps import *
 import base64
 from io import BytesIO
 import json
 import imageio.v3 as iio
 
 Recup_Donneees_VP()
-
 
 p = os.getcwd()
 
@@ -456,29 +453,6 @@ def plot_vehicule_evolution(df_commune, model, region=None, departement=None, co
     # df_commune.to_csv(p + r'/France_data/df_commune_proportion.csv',encoding="utf-8")
     carto(df_commune,file_name,model,Annees_list)
 
-    
-
-# exemples
-# plot_vehicule_evolution(df_propre,'crit_air',None,None,'Menucourt',None,None,2017,None)
-# plot_vehicule_evolution(df_propre,'crit_air',None,None,None,None,None,2011)
-# plot_vehicule_evolution(df_propre,'carburant',None,None,None,'Hybride rechargeable,Electrique et hydrogène',None)
-
-
-# region_de_residence = pd.unique(df_propre['region_de_residence'])
-# print(region_de_residence)
-
-# carburant = df_propre['carburant'].unique()
-# print (carburant)
-
-# for r in region_de_residence:
-#     print (r)
-#     plot_vehicule_evolution(df_propre,'carburant',r,None,None,None,None,None,2021)
-# plot_vehicule_evolution(df_propre,'crit_air',None,None,'Menucourt,Boisemont','Hybride rechargeable,Electrique et hydrogène',None,None,None)
-# plot_vehicule_evolution(df_propre, 'crit_air', None,
-#                         None, 'Aubervilliers,Saint-Germain-en-Laye,Sceaux', None, None, 2015, 2021)
-
-# plot_vehicule_evolution(df_propre, 'crit_air', None,
-#                         'Hauts-de-Seine', None, None, None, 2019, 2021)
 
 plot_vehicule_evolution(df_propre, 'crit_air', None,
                          'Paris', None, None, None, 2012, 2022)
