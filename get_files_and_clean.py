@@ -6,7 +6,7 @@ import glob
 import requests
 from tqdm import tqdm
 
-class Recup_Donneees_VP:
+class Recup_Donnees_VP:
     def __init__(self):
         self.p = os.getcwd()
         self.fichierExiste = False
