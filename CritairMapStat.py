@@ -1,4 +1,4 @@
-from get_files_and_clean import Recup_Donneees_VP
+from get_files_and_clean import Recup_Donnees_VP
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
@@ -13,7 +13,7 @@ from io import BytesIO
 import json
 import imageio.v3 as iio
 
-Recup_Donneees_VP()
+Recup_Donnees_VP()
 
 p = os.getcwd()
 
